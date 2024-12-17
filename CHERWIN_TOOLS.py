@@ -335,28 +335,33 @@ def RESTART_SCRIPT(RESTART_SCRIPT_NAME):
 
 def CHECK():
     global CHERWIN_SCRIPT_CONFIG
-    print('>>>>>>>开始获取版本信息...')
-    baseurl = 'https://gitee.com/cherwin/CHERWIN_SCRIPTS/raw/main/'
-    TOOLS_NAME = 'CHERWIN_TOOLS.py'
-    server_script_url = f'https://gitee.com/cherwin/CHERWIN_SCRIPTS/raw/main/{TOOLS_NAME}'
+    print('>>>>>>>开始读取本地版本信息...')
     try:
-        response = requests.get(f'{baseurl}CHERWIN_SCRIPT_CONFIG.json', verify=False)
-        response.encoding = 'utf-8'
-        # 读取内容
-        CHERWIN_SCRIPT_CONFIG = response.json()
+        # 读取本地配置文件 CHERWIN_SCRIPT_CONFIG.json
+        with open('CHERWIN_SCRIPT_CONFIG.json', 'r', encoding='utf-8') as file:
+            CHERWIN_SCRIPT_CONFIG = json.load(file)
+        
         if 'code' in CHERWIN_SCRIPT_CONFIG:
             CHERWIN_SCRIPT_CONFIG = None
+        
         TOOLS_VERSION = CHERWIN_SCRIPT_CONFIG.get('TOOLS_VERSION', NOW_TOOLS_VERSION)
 
-        if CHECK_UPDATE_NEW(NOW_TOOLS_VERSION, TOOLS_VERSION, server_script_url, TOOLS_NAME):
+        # 检查本地脚本是否需要更新
+        if CHECK_UPDATE_NEW(NOW_TOOLS_VERSION, TOOLS_VERSION, '', '', APP_NAME=None):
             print('更新脚本完成')
-            # print(f'重新检测[{TOOLS_NAME}]版本')
             return False
         else:
             return True
-    except:
-        print('获取CHERWIN_SCRIPT_CONFIG.json失败')
+    except FileNotFoundError:
+        print('本地文件 CHERWIN_SCRIPT_CONFIG.json 未找到')
         return False
+    except json.JSONDecodeError:
+        print('本地文件 CHERWIN_SCRIPT_CONFIG.json 格式错误')
+        return False
+    except Exception as e:
+        print(f'发生未知错误：{e}')
+        return False
+
 
 
 def GJJJ_SIGN():
